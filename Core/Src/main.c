@@ -46,12 +46,16 @@
 uint16_t Enc_count[3];
 uint8_t BTN;
 uint8_t BTN2;
+uint8_t old_BTN;
+uint8_t old_BTN2;
 uint8_t flag = 0;
 uint8_t flag_exti = 0;
 uint8_t cntt;
 
 uint16_t AD_RES[2];
 uint16_t pub_adc = 0;
+
+uint16_t time_read;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -137,8 +141,9 @@ int main(void)
   HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
 
+  HAL_ADCEx_Calibration_Start(&hadc1);
+  	HAL_ADC_Start_DMA(&hadc1, &AD_RES, 2);
 
-  HAL_ADC_Start_DMA(&hadc1, &AD_RES, 2);
 
   	HAL_CAN_Start(&hcan);
 	HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO1_MSG_PENDING);
@@ -162,11 +167,11 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  	pub_adc = AD_RES[0];
+	  	pub_adc = AD_RES[1];
 
-	  	Enc_count[0] = TIM1->CNT;
-	  	Enc_count[1] = TIM3->CNT;
-	  	Enc_count[2] = TIM4->CNT;
+	  	Enc_count[0] = TIM3->CNT;
+	  	Enc_count[1] = TIM4->CNT;
+	  	Enc_count[2] = TIM1->CNT;
 
 		TxData[0] = ((Enc_count[0] & 0xFF00) >> 8);
 		TxData[1] = (Enc_count[0] & 0x00FF);
@@ -182,10 +187,18 @@ int main(void)
 			flag = 0;
 		}
 
-		if (flag_exti == 1){
+		if (flag_exti == 1 && (BTN != old_BTN || BTN2 != old_BTN2)){  ///  && HAL_GetTick() - time_read > 200
 			HAL_CAN_AddTxMessage(&hcan, &TxHeader2, TxData2, &TxMailbox);
 			flag_exti = 0;
+			time_read = HAL_GetTick();
+
+			old_BTN = BTN;
+			old_BTN2 = BTN2;
 		}
+
+
+
+
   }
   /* USER CODE END 3 */
 }
@@ -239,79 +252,27 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	if(GPIO_Pin == BTN1_Pin){
-			uint8_t bit =! HAL_GPIO_ReadPin(BTN1_GPIO_Port, BTN1_Pin);
-			if(bit == true){
-				BTN |= 1 <<0;//set bit 0 to high(1)
+	// not working
+//	if(GPIO_Pin == BTN1_Pin){
+//			uint8_t bit = HAL_GPIO_ReadPin(BTN1_GPIO_Port, BTN1_Pin);
+//			if(bit == true){
+//				BTN |= 1 <<0;//set bit 0 to high(1)
+//			}
+//			else BTN &= ~(1 << 0);//clear bit 0 to low(0)
+//	}
+	if(GPIO_Pin == BTN1_Pin  || BTN2_Pin){
+			uint8_t bit1 = HAL_GPIO_ReadPin(BTN1_GPIO_Port, BTN1_Pin);
+			uint8_t bit2 = HAL_GPIO_ReadPin(BTN2_GPIO_Port, BTN2_Pin);
+			if(bit1 == true && bit2 != true){
+				BTN |= 1 <<0;	//set bit 0 to high(1)
 			}
-			else BTN &= ~(1 << 0);//clear bit 0 to low(0)
+			else if (bit1 != true && bit2 == true){
+				BTN &= ~(1 << 0);	//clear bit 0 to low(0)
+			}
 	}
-	else if(GPIO_Pin == BTN2_Pin){
-			uint8_t bit =! HAL_GPIO_ReadPin(BTN2_GPIO_Port, BTN2_Pin);
-			if(bit == true){
-				BTN |= 1 <<1;//set bit 1 to high(1)
-			}
-			else BTN &= ~(1 << 1);//clear bit 1 to low(0)
-	}
-	else if(GPIO_Pin == BTN3_Pin){
-				uint8_t bit =! HAL_GPIO_ReadPin(BTN3_GPIO_Port, BTN3_Pin);
-				if(bit == true){
-					BTN |= 1 <<2;//set bit 1 to high(1)
-				}
-				else BTN &= ~(1 << 2);//clear bit 1 to low(0)
-		}
-	else if(GPIO_Pin == BTN4_Pin){
-				uint8_t bit =! HAL_GPIO_ReadPin(BTN4_GPIO_Port, BTN4_Pin);
-				if(bit == true){
-					BTN |= 1 <<3;//set bit 1 to high(1)
-				}
-				else BTN &= ~(1 << 3);//clear bit 1 to low(0)
-		}
-	else if(GPIO_Pin == BTN5_Pin){
-				uint8_t bit =! HAL_GPIO_ReadPin(BTN5_GPIO_Port, BTN5_Pin);
-				if(bit == true){
-					BTN |= 1 <<4;//set bit 1 to high(1)
-				}
-				else BTN &= ~(1 << 4);//clear bit 1 to low(0)
-		}
-	else if(GPIO_Pin == BTN6_Pin){
-				uint8_t bit =! HAL_GPIO_ReadPin(BTN6_GPIO_Port, BTN6_Pin);
-				if(bit == true){
-					BTN |= 1 <<5;//set bit 1 to high(1)
-				}
-				else BTN &= ~(1 << 5);//clear bit 1 to low(0)
-		}
-	else if(GPIO_Pin == BTN7_Pin){
-				uint8_t bit =! HAL_GPIO_ReadPin(BTN7_GPIO_Port, BTN7_Pin);
-				if(bit == true){
-					BTN |= 1 <<6;//set bit 1 to high(1)
-				}
-				else BTN &= ~(1 << 6);//clear bit 1 to low(0)
-		}
-	else if(GPIO_Pin == BTN8_Pin){
-					uint8_t bit =! HAL_GPIO_ReadPin(BTN8_GPIO_Port, BTN8_Pin);
-					if(bit == true){
-						BTN |= 1 <<7;//set bit 1 to high(1)
-					}
-					else BTN &= ~(1 << 7);//clear bit 1 to low(0)
-			}
-////////////////////////////////
-	else if(GPIO_Pin == BTN9_Pin){
-						uint8_t bit =! HAL_GPIO_ReadPin(BTN9_GPIO_Port, BTN9_Pin);
-						if(bit == true){
-							BTN2 |= 1 <<0;//set bit 1 to high(1)
-						}
-						else BTN2 &= ~(1 << 0);//clear bit 1 to low(0)
-			}
-	else if(GPIO_Pin == BTN10_Pin){
-							uint8_t bit =! HAL_GPIO_ReadPin(BTN10_GPIO_Port, BTN10_Pin);
-							if(bit == true){
-								BTN2 |= 1 <<1;//set bit 1 to high(1)
-							}
-							else BTN2 &= ~(1 << 1);//clear bit 1 to low(0)
-			}
 	TxData2[0] = BTN;
 	TxData2[1] = BTN2;
+
 	flag_exti = true;
 
 }

@@ -70,25 +70,18 @@ void Error_Handler(void);
 #define BTN3_EXTI_IRQn EXTI4_IRQn
 #define BTN4_Pin GPIO_PIN_5
 #define BTN4_GPIO_Port GPIOA
-#define BTN4_EXTI_IRQn EXTI9_5_IRQn
 #define BTN5_Pin GPIO_PIN_10
 #define BTN5_GPIO_Port GPIOB
-#define BTN5_EXTI_IRQn EXTI15_10_IRQn
 #define BTN6_Pin GPIO_PIN_11
 #define BTN6_GPIO_Port GPIOB
-#define BTN6_EXTI_IRQn EXTI15_10_IRQn
 #define BTN7_Pin GPIO_PIN_12
 #define BTN7_GPIO_Port GPIOB
-#define BTN7_EXTI_IRQn EXTI15_10_IRQn
 #define BTN8_Pin GPIO_PIN_13
 #define BTN8_GPIO_Port GPIOB
-#define BTN8_EXTI_IRQn EXTI15_10_IRQn
 #define BTN9_Pin GPIO_PIN_14
 #define BTN9_GPIO_Port GPIOB
-#define BTN9_EXTI_IRQn EXTI15_10_IRQn
 #define BTN10_Pin GPIO_PIN_15
 #define BTN10_GPIO_Port GPIOB
-#define BTN10_EXTI_IRQn EXTI15_10_IRQn
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
